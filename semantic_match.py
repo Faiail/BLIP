@@ -9,8 +9,8 @@ import random
 from tqdm import tqdm
 import json
 
-
-image_size = 224
+image_size=480
+#image_size = 224  # default a 480 (fai check per vedere se è meglio)
 seed = 1
 
 print('setting seed')
@@ -32,9 +32,10 @@ if __name__ == "__main__":
         Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
     ])
 
-    dataset = BLIPDataset(data_path='artgraph/data/data_captions.csv',
+    dataset = BLIPDataset(data_path='artgraph/data/data_captions_url.csv',
                           img_dir='artgraph/data/images-resized',
-                          preprocess=transform)
+                          preprocess=transform,
+                          online=True)
     loader = DataLoader(dataset=dataset, batch_size=8, shuffle=False)
 
     print('performing evaluation')
@@ -58,4 +59,4 @@ if __name__ == "__main__":
 
     print(summary)
 
-    json.dump(summary, open('artgraph/summary.json', 'w+'))
+    json.dump(summary, open('artgraph/summary_hd.json', 'w+'))

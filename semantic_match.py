@@ -8,9 +8,9 @@ import numpy as np
 import random
 from tqdm import tqdm
 import json
+import pandas as pd
 
-image_size=480
-#image_size = 224  # default a 480 (fai check per vedere se è meglio)
+image_size = 224  # default a 480 (fai check per vedere se è meglio)
 seed = 1
 
 print('setting seed')
@@ -32,31 +32,43 @@ if __name__ == "__main__":
         Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
     ])
 
-    dataset = BLIPDataset(data_path='artgraph/data/data_captions_url.csv',
+    dataset = BLIPDataset(data_path='artgraph/data/data_captions.csv',
                           img_dir='artgraph/data/images-resized',
                           preprocess=transform,
-                          online=True)
+                          online=False,
+                          caption_column='caption')
     loader = DataLoader(dataset=dataset, batch_size=8, shuffle=False)
 
     print('performing evaluation')
 
     sum_itm = 0.0
     sum_itc = 0.0
+    itm = torch.Tensor()
+    itc = torch.Tensor()
     for images, captions in tqdm(loader):
         images = images.to(device)
         captions = captions[0]
         with torch.no_grad():
             itm_output = model(images, captions, match_head='itm')
             itm_score = torch.nn.functional.softmax(itm_output, dim=1)[:, 1]  # image-text matching
+            itm = torch.cat([itm, itm_score.cpu()])
             sum_itm += torch.sum(itm_score)
+
             itc_score = torch.diagonal(model(images, captions, match_head='itc'), 0)  # image-text cosine similarity
+            itc = torch.cat([itc, itc_score.cpu()])
             sum_itc += torch.sum(itc_score)
 
     summary = {
-        'itc': sum_itc/len(dataset),
-        'itm': sum_itm/len(dataset)
+        'itc': sum_itc.item()/len(dataset),
+        'itm': sum_itm.item()/len(dataset)
     }
 
     print(summary)
 
-    json.dump(summary, open('artgraph/summary_hd.json', 'w+'))
+    data = pd.read_csv('artgraph/data/data_captions.csv', index_col=0)
+    data['itm'] = itm.numpy()
+    data['itc'] = itc.numpy()
+
+    data.to_csv('data_dist.csv')
+
+    json.dump(summary, open('artgraph/summary.json', 'w+'))

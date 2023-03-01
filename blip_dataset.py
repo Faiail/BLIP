@@ -13,16 +13,18 @@ class BLIPDataset(Dataset):
     def __init__(self, data_path: str = 'data_captions.csv',
                  img_dir: str = 'images-resized',
                  preprocess=None,
-                 online: bool = True):
+                 online: bool = True,
+                 caption_column: str = 'caption'):
         self.img_root = img_dir
         self.data = pd.read_csv(data_path, index_col=0)
         self.preprocess = preprocess
         self.image_column = 'image_url' if online else 'name'
         self.online = online
+        self.caption_column = caption_column
 
     def __getitem__(self, item):
         raw = self.data.iloc[item]
-        name, caption = raw[[self.image_column, 'caption']]
+        name, caption = raw[[self.image_column, self.caption_column]]
         try:
             image = Image.open(requests.get(name, stream=True).raw).convert('RGB') if self.online\
                 else Image.open(f'{self.img_root}/{name}').convert('RGB')

@@ -38,7 +38,7 @@ if __name__ == "__main__":
                           img_dir='artgraph/data/images-hd',
                           preprocess=transform,
                           online=False,
-                          caption_column='caption')
+                          caption_column='caption')  # replace here to evaluate with captions or prompts
 
     # the data loader is a special data structure that can iterate over a dataset with a specifi batch size
     loader = DataLoader(dataset=dataset, batch_size=8, shuffle=False)
@@ -86,5 +86,5 @@ if __name__ == "__main__":
     data['itc'] = itc.numpy()
 
     # save
-    data.to_csv('data_dist_hd.csv')
-    json.dump(summary, open('artgraph/summary.json', 'w+'))
+    data.to_csv('artgraph/data/data_dist_hd.csv') # change here the name
+    json.dump(summary, open('artgraph/summary.json', 'w+')) # change here the name

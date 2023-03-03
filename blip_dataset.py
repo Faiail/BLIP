@@ -47,6 +47,6 @@ class BLIPDataset(Dataset):
 
     def __len__(self):
         """
-        Returns how many items are in the dataset       
+        Returns how many items are in the dataset
         """
         return len(self.data)
